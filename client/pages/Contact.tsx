@@ -1,0 +1,535 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Send,
+  Clock,
+  Building,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import HeroSlider from "@/components/HeroSlider";
+import ServiceDropdown from "@/components/ServiceDropdown";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+export default function Contact() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Reset form
+        setFormData({
+          fullName: "",
+          email: "",
+          phone: "",
+          message: "",
+        });
+        setSubmitStatus("success");
+
+        // Reset success message after 5 seconds
+        setTimeout(() => setSubmitStatus("idle"), 5000);
+      } else {
+        setSubmitStatus("error");
+        setTimeout(() => setSubmitStatus("idle"), 5000);
+      }
+    } catch (error) {
+      setSubmitStatus("error");
+      setTimeout(() => setSubmitStatus("idle"), 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -50px 0px",
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+        }
+      });
+    }, observerOptions);
+
+    const animateElements = document.querySelectorAll(".animate-on-scroll");
+    animateElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Header />
+
+      {/* Header */}
+      {/* <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+         
+            <div className="flex-shrink-0">
+              <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+                <div className="relative p-1.5 sm:p-2 bg-gradient-to-br from-blue-900 to-red-600 rounded-lg sm:rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <img 
+                    src="https://cdn.builder.io/api/v1/image/assets%2F006b1d80f49744f8a88951a12aeaff7a%2Fffd6997b070949e7808ca68d4da19889?format=webp&width=800" 
+                    alt="Intelligate Solutions Logo" 
+                    className="h-6 w-6 sm:h-8 sm:w-8 filter brightness-0 invert"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-lg sm:text-xl font-bold text-blue-900 leading-tight">Intelligate Solutions</span>
+                  <span className="text-xs text-red-600 font-medium tracking-wider hidden sm:block">A GATEWAY OF INTELLIGENCE</span>
+                </div>
+              </Link>
+            </div>
+            
+       
+            <nav className="hidden lg:flex space-x-8">
+              <Link to="/" className="text-gray-700 hover:text-blue-900 font-medium transition-colors">Home</Link>
+              <Link to="/about" className="text-gray-700 hover:text-blue-900 font-medium transition-colors">About Us</Link>
+               <ServiceDropdown currentPath={location.pathname} />
+              <Link to="/industries" className="text-gray-700 hover:text-blue-900 font-medium transition-colors">Industries</Link>
+              <Link to="/openings" className="text-gray-700 hover:text-blue-900 font-medium transition-colors">Current Openings</Link>
+              <Link to="/contact" className="text-gray-900 hover:text-blue-900 font-medium transition-colors">Contact</Link>
+              <Link to="/get-quote" className="text-gray-700 hover:text-blue-900 font-medium transition-colors">Get Quote</Link>
+            </nav>
+            
+            <div className="flex items-center gap-2">
+           
+              <a 
+                href="https://wa.me/919971019767" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-green-500 hover:bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center gap-1 sm:gap-2 transition-colors text-sm sm:text-base"
+              >
+                <MessageCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden sm:inline">WhatsApp</span>
+                <span className="sm:hidden">WA</span>
+              </a>
+              
+          
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                aria-expanded="false"
+              >
+                <span className="sr-only">Open main menu</span>
+                {!mobileMenuOpen ? (
+                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                ) : (
+                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+          
+      
+          <div className={`lg:hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+              <Link 
+                to="/" 
+                className="text-gray-700 hover:bg-gray-50 hover:text-blue-900 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link 
+                to="/about" 
+                className="text-gray-700 hover:bg-gray-50 hover:text-blue-900 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About Us
+              </Link>
+               <div className="px-3 py-2">
+                <ServiceDropdown currentPath={location.pathname}  />
+              </div>
+              
+              <Link 
+                to="/industries" 
+                className="text-gray-700 hover:bg-gray-50 hover:text-blue-900 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Industries
+              </Link>
+              <Link 
+                to="/openings" 
+                className="text-gray-700 hover:bg-gray-50 hover:text-blue-900 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Current Openings
+              </Link>
+              <Link 
+                to="/contact" 
+                className="text-gray-900 bg-gray-50 hover:text-blue-900 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header> */}
+
+      {/* Hero Section with Slider */}
+      <section className="relative text-white">
+        <HeroSlider images={["images/contact.webp"]} height="h-[500px]" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 animate-on-scroll">
+              Let's Get In Touch
+            </h1>
+            <p className="text-xl md:text-2xl max-w-3xl mx-auto animate-on-scroll">
+              We'd love to hear from you.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Form & Info */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12">
+            {/* Contact Form */}
+            <div className="animate-on-scroll">
+              <Card className="shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-2xl text-gray-900">
+                    Send us a Message
+                  </CardTitle>
+                  <CardDescription>
+                    Fill out the form below and we'll get back to you within 24
+                    hours.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                      <Label htmlFor="fullName">Full Name *</Label>
+                      <Input
+                        id="fullName"
+                        name="fullName"
+                        type="text"
+                        required
+                        value={formData.fullName}
+                        onChange={handleInputChange}
+                        className="mt-1"
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="email">Email Address *</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="mt-1"
+                        placeholder="Enter your email address"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="mt-1"
+                        placeholder="Enter your phone number (optional)"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="message">Message *</Label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        required
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        className="mt-1 min-h-32"
+                        placeholder="Tell us about your requirements or questions..."
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-blue-900 hover:bg-blue-800 text-white py-3"
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Sending...
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Send className="h-4 w-4" />
+                          Send Message
+                        </div>
+                      )}
+                    </Button>
+
+                    {submitStatus === "success" && (
+                      <div className="bg-green-50 border border-green-200 rounded-md p-4">
+                        <p className="text-green-800">
+                          Thank you! Your message has been sent successfully.
+                          We'll get back to you soon.
+                        </p>
+                      </div>
+                    )}
+
+                    {submitStatus === "error" && (
+                      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                        <p className="text-red-800">
+                          Sorry, there was an error sending your message. Please
+                          try again or contact us directly.
+                        </p>
+                      </div>
+                    )}
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Contact Information */}
+            <div className="space-y-8 animate-on-scroll">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                  Get in Touch
+                </h2>
+                <p className="text-lg text-gray-700 mb-8">
+                  Ready to find your next great hire or discover your dream job?
+                  Our expert team is here to help you navigate your recruitment
+                  needs.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Phone className="h-6 w-6 text-blue-900" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Call Us
+                    </h3>
+                    <div className="space-y-1">
+                      <a
+                        href="tel:9650923366"
+                        className="block text-blue-900 hover:text-blue-700 transition-colors"
+                      >
+                        +91 9650923366
+                      </a>
+                      <a
+                        href="tel:9971019767"
+                        className="block text-blue-900 hover:text-blue-700 transition-colors"
+                      >
+                        +91 9971019767
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <MessageCircle className="h-6 w-6 text-green-900" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      WhatsApp
+                    </h3>
+                    <a
+                      href="https://wa.me/919971019767"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-900 hover:text-green-700 transition-colors"
+                    >
+                      +91 9971019767
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Mail className="h-6 w-6 text-purple-900" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Email Us
+                    </h3>
+                    <div className="space-y-1">
+                      <a
+                        href="mailto:akhil.kaushik@intelligatesolution.com"
+                        className="block text-purple-900 hover:text-purple-700 transition-colors"
+                      >
+                        akhil.kaushik@intelligatesolution.com
+                      </a>
+                      <a
+                        href="mailto:admin@intelligatesolution.com"
+                        className="block text-purple-900 hover:text-purple-700 transition-colors"
+                      >
+                        admin@intelligatesolution.com
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Clock className="h-6 w-6 text-orange-900" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Business Hours
+                    </h3>
+                    <div className="space-y-1 text-gray-700">
+                      <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
+                      <p>Saturday: 9:00 AM - 2:00 PM</p>
+                      <p>Sunday: Closed</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Office Addresses */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 animate-on-scroll">
+              Our Offices
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto animate-on-scroll">
+              Visit us at our convenient locations across North India
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="professional-card animate-on-scroll hover:shadow-xl transition-all duration-300">
+              <CardHeader className="text-center">
+                <Building className="h-16 w-16 text-blue-900 mx-auto mb-4" />
+                <CardTitle className="text-xl">Registered Office</CardTitle>
+                <CardDescription>Rohtak, Haryana</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="space-y-4">
+                  <div className="flex items-start justify-center gap-2">
+                    <MapPin className="h-5 w-5 text-blue-900 mt-1 flex-shrink-0" />
+                    <div className="text-gray-700">
+                      <p>155/29 Ram Gopal Colony,</p>
+                      <p>Delhi Road, Rohtak – 124001</p>
+                      <p className="font-medium text-blue-900">(Haryana)</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" className="w-full">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Get Directions
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="professional-card animate-on-scroll hover:shadow-xl transition-all duration-300">
+              <CardHeader className="text-center">
+                <Building className="h-16 w-16 text-red-600 mx-auto mb-4" />
+                <CardTitle className="text-xl">Corporate Office</CardTitle>
+                <CardDescription>Noida, Uttar Pradesh</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="space-y-4">
+                  <div className="flex items-start justify-center gap-2">
+                    <MapPin className="h-5 w-5 text-red-600 mt-1 flex-shrink-0" />
+                    <div className="text-gray-700">
+                      <p>D-80, Sector 2,</p>
+                      <p>Noida – 201301</p>
+                      <p className="font-medium text-red-600">
+                        (Uttar Pradesh)
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="outline" className="w-full">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Get Directions
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+
+      {/* WhatsApp Floating Button */}
+      <a
+        href="https://wa.me/919971019767"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-colors z-50 animate-bounce"
+      >
+        <MessageCircle size={24} />
+      </a>
+    </div>
+  );
+}
